@@ -1,12 +1,13 @@
 import React from 'react';
 import './App.css';
+import { Button, message } from 'antd';
 
-function App() {
-  return (
-    <div className="App">
-      Learn React to Create App
-    </div>
-  );
+export default class App extends React.Component{
+  handleClick = () => {
+    message.success('We are success!');
+  }
+
+  render() {
+    return <Button type="primary" onClick={this.handleClick}>Primary</Button>
+  }
 }
-
-export default App;
