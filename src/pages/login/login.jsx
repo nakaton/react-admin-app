@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
-import { Form, Icon, Input, Button} from 'antd';
+import { Form, Icon, Input, Button, message} from 'antd';
 
 import './login.less'
 import logo from './images/logo.png'
+import {reqLogin} from '../../api/index'
+import memoryUtils from '../../utils/memoryUtils'
+
 
 const Item = Form.Item;
 
@@ -15,11 +18,54 @@ class Login extends Component{
         // Prevent Form auto submit
         event.preventDefault();
 
-        const form = this.props.form;
-        
-        // Get input data from form
-        const values = form.getFieldsValue(); 
-        console.log(values);
+        this.props.form.validateFields(async (err, values) => {
+            if (!err) {
+                console.log('Send Ajax Request!');
+
+                // 解构values
+                const {username, password} = values;
+                
+                // Call Login API
+                const result = await reqLogin(username, password) // success : {status: 0, data: }  Failure: {status:1, msg: }
+                console.log("Login Result: ", result)
+
+                if (result.status === 0){
+                    // Login Success
+                    message.success('Login Success')
+
+                    // Save User Info into memory using memoryUtils
+                    const user = result.data
+                    memoryUtils.user = user
+
+                    // Jump to Admin Page (Not need to back to login, so use 'replace()', otherwise use 'push()')
+                    this.props.history.replace('/')
+                } else {
+                    // Login Failure
+                    message.error(result.msg)
+                }
+
+            } else {
+                console.log('Form Validate Failure!')
+            }
+        });
+    }
+
+    /*
+    Custom validation for password
+    */
+    validatePwd = (rule, value, callback) => {
+        console.log(value);
+        if(!value){
+            callback('Password is required!')
+        }else if(value.length < 4 ) {
+            callback('The min lenght of Password is 4!')
+        }else if(value.length > 12) {
+            callback('The max length of Password is 12!')
+        }else if(!/^[a-zA-Z0-9_]+$/.test(value)){
+            callback("Password should 'alpha', 'number' or '_' !")
+        }else{
+            callback()  //vaidate success
+        }
     }
 
     render() {
@@ -40,12 +86,14 @@ class Login extends Component{
                         <Item>
                             {
                                 getFieldDecorator('username', {
+                                    // Antd predefined validate
                                     rules: [
                                         { required: true, message: 'Please input your username!' },
                                         { min: 4, message: 'The min length of Username is 4 !' },
                                         { max: 12, message: 'The max lenght of Username is 12!' },
                                         { pattern: /^[a-zA-Z0-9_]+$/, message: "Username should 'alpha', 'number' or '_' !" },
                                     ],
+                                    initialValue: 'admin'
                                 })(
                                     <Input
                                     prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
@@ -56,7 +104,14 @@ class Login extends Component{
                         </Item>
                         <Item>
                             {
-                                getFieldDecorator('password', {})(
+                                getFieldDecorator('password', {
+                                    rules: [
+                                        {
+                                            validator : this.validatePwd
+                                        }
+                                    ],
+                                    initialValue: 'admin'
+                                })(
                                     <Input
                                         prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
                                         type="password"
@@ -84,7 +139,20 @@ class Login extends Component{
 const WrapLogin = Form.create()(Login);
 export default WrapLogin;
 
+
+// 学习总结
 /*
 1.前台表单验证
 2.收集表单输入数据
+*/
+
+/*
+async and await
+1.作用
+    简化promise对象的使用： 不用再使用then()来制定成功/失败的回调函数
+    以同步编码（没有回调函数）方式实现异步流程
+2.哪里写await
+    在返回promise调表达式左侧写await：不想要promise， 想要promise异步执行调成功value数据
+3.在哪里写async
+    await所在函数（最近的）定义的左侧
 */
