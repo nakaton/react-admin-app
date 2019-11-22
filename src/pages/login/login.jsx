@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
+import {Redirect} from 'react-router-dom'
 import { Form, Icon, Input, Button, message} from 'antd';
 
 import './login.less'
 import logo from './images/logo.png'
 import {reqLogin} from '../../api/index'
 import memoryUtils from '../../utils/memoryUtils'
+import storageUtils from '../../utils/storageUtils'
 
 
 const Item = Form.Item;
@@ -33,9 +35,11 @@ class Login extends Component{
                     // Login Success
                     message.success('Login Success')
 
-                    // Save User Info into memory using memoryUtils
                     const user = result.data
+                    // Save User Info into memory using memoryUtils
                     memoryUtils.user = user
+                    // Save User Info into local using storageUtils
+                    storageUtils.saveUser(user)
 
                     // Jump to Admin Page (Not need to back to login, so use 'replace()', otherwise use 'push()')
                     this.props.history.replace('/')
@@ -69,7 +73,13 @@ class Login extends Component{
     }
 
     render() {
-        
+        // User already exist in memory, redirect to Admin page
+        const user = memoryUtils.user
+        if(user && user._id) {
+            // Auto jump to Admin page (in render())
+            return <Redirect to='/' />
+        }
+
         // Get the form which pass from WrapLogin component
         const form = this.props.form;
         const {getFieldDecorator} = form;
