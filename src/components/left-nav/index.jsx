@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Menu, Icon } from 'antd';
 
 import './index.less'
-
+import menuList from '../../config/menuConfig'
 import logo from '../../assets/images/logo.png'
 
 const { SubMenu } = Menu;
@@ -12,6 +12,71 @@ const { SubMenu } = Menu;
 Left Navigation Component
 */
 export default class LeftNav extends Component {
+    /*
+    Base on menuList data create Menu item array
+    Implement by map() or by reduce()
+    */
+    getMenuNodes_map = (menuList) => {
+        return menuList.map(item => {
+            if(!item.children){
+                return(
+                    <Menu.Item key={item.key}>
+                        <Link to={item.key}>
+                            <Icon type={item.icon} />
+                            <span>{item.title}</span>
+                        </Link>
+                    </Menu.Item>
+                )
+            }else{
+                return(
+                    <SubMenu
+                        key={item.key}
+                        title={
+                            <span>
+                                <Icon type={item.icon} />
+                                <span>{item.title}</span>
+                            </span>
+                        }
+                    >
+                    {this.getMenuNodes(item.children)}
+                    </SubMenu>
+                )
+            }
+        })
+    }
+
+    getMenuNodes = (menuList) => {
+        return menuList.reduce((pre, item) => {
+            // add <Menu.item> into pre
+            if(!item.children){
+                pre.push((
+                    <Menu.Item key={item.key}>
+                        <Link to={item.key}>
+                            <Icon type={item.icon} />
+                            <span>{item.title}</span>
+                        </Link>
+                    </Menu.Item>
+                ))
+            }else{
+                // add <Submenu> into pre
+                pre.push((
+                    <SubMenu
+                        key={item.key}
+                        title={
+                            <span>
+                                <Icon type={item.icon} />
+                                <span>{item.title}</span>
+                            </span>
+                        }
+                    >
+                    {this.getMenuNodes(item.children)}
+                    </SubMenu>
+                ))
+            }
+            return pre
+        },[])
+    }
+
     render() {
 
         return (
@@ -24,14 +89,14 @@ export default class LeftNav extends Component {
                     mode="inline"
                     theme="dark" 
                 >
-                    <Menu.Item key="/home">
+                    {/* <Menu.Item key="/home">
                         <Link to='/home'>
                             <Icon type="home" />
                             <span>Home</span>
                         </Link>
                     </Menu.Item>
                     <SubMenu
-                        key="products"
+                        key="/products"
                         title={
                         <span>
                             <Icon type="appstore" />
@@ -51,47 +116,11 @@ export default class LeftNav extends Component {
                                 <span>Product</span>
                             </Link>
                         </Menu.Item>
-                    </SubMenu>
-                    <Menu.Item key="/user">
-                        <Link to='/user'>
-                            <Icon type="user" />
-                            <span>User</span>
-                        </Link>
-                    </Menu.Item>
-                    <Menu.Item key="/role">
-                        <Link to='/role'>
-                            <Icon type="skin" />
-                            <span>Role</span>
-                        </Link>
-                    </Menu.Item>
-                    <SubMenu
-                        key="charts"
-                        title={
-                        <span>
-                            <Icon type="area-chart" />
-                            <span>Charts</span>
-                        </span>
-                        }
-                    >
-                        <Menu.Item key="/charts/bar">
-                            <Link to='/charts/bar'>
-                                <Icon type="bar-chart" />
-                                <span>Bar Chart</span>
-                            </Link>
-                        </Menu.Item>
-                        <Menu.Item key="/charts/line">
-                            <Link to='/charts/line'>
-                                <Icon type="line-chart" />
-                                <span>Line Chart</span>
-                            </Link>
-                        </Menu.Item>
-                        <Menu.Item key="/charts/pie">
-                            <Link to='/charts/pie'>
-                                <Icon type="pie-chart" />
-                                <span>Line Chart</span>
-                            </Link>
-                        </Menu.Item>
-                    </SubMenu>
+                    </SubMenu> */}
+
+                    {
+                        this.getMenuNodes(menuList)
+                    }
                 </Menu>
             </div>
         )
