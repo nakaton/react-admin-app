@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 import { Menu, Icon } from 'antd';
 
 import './index.less'
@@ -11,7 +11,7 @@ const { SubMenu } = Menu;
 /*
 Left Navigation Component
 */
-export default class LeftNav extends Component {
+class LeftNav extends Component {
     /*
     Base on menuList data create Menu item array
     Implement by map() or by reduce()
@@ -58,6 +58,15 @@ export default class LeftNav extends Component {
                     </Menu.Item>
                 ))
             }else{
+                //Get current path name
+                const path = this.props.location.pathname
+
+                //查找一个与当前路径匹配的子Item
+                const cItem = item.children.find(cItem => cItem.key === path)
+                if(cItem){
+                    this.openKey = item.key
+                }
+
                 // add <Submenu> into pre
                 pre.push((
                     <SubMenu
@@ -77,7 +86,16 @@ export default class LeftNav extends Component {
         },[])
     }
 
+    // Execute at the first time of render (syn)
+    componentWillMount (){
+        this.menuNodes = this.getMenuNodes(menuList)
+    }
+
     render() {
+        //Get current path name
+        const path = this.props.location.pathname
+        //Get key of open menu
+        const openKey = this.openKey
 
         return (
             <div className="left-nav">
@@ -88,6 +106,8 @@ export default class LeftNav extends Component {
                 <Menu
                     mode="inline"
                     theme="dark" 
+                    selectedKeys = {[path]}
+                    defaultOpenKeys = {[openKey]}
                 >
                     {/* <Menu.Item key="/home">
                         <Link to='/home'>
@@ -119,10 +139,17 @@ export default class LeftNav extends Component {
                     </SubMenu> */}
 
                     {
-                        this.getMenuNodes(menuList)
+                        this.menuNodes
                     }
                 </Menu>
             </div>
         )
     }
 }
+
+/*
+WithRouter高阶组件：
+包装非路由组件，返回一个新的组件
+新的组件向非路由组件传递3个属性：history/location/match
+*/
+export default withRouter(LeftNav)
