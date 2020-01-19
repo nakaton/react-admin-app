@@ -17,7 +17,7 @@ import Pie from '../charts/pie'
 const { Footer, Sider, Content } = Layout
 
 /*
-Admin Component
+Admin Component 
 */
 export default class Admin extends Component{
 
